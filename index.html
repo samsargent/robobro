@@ -1,0 +1,118 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>Robo Tommo</title> 
+	<meta content='width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no;' name='viewport' />
+	<meta name="viewport" content="width=device-width" />
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0-rc.2/jquery.mobile-1.1.0-rc.2.min.css" />
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.1.0-rc.2/jquery.mobile-1.1.0-rc.2.min.js"></script>
+	<style>
+	.ui-field-contain div.ui-slider {
+	width: 90% !important;
+	}
+	
+	.ui-btn-text{
+		font-size:10px;
+	}
+	
+	.ui-btn-icon-left .ui-btn-inner {
+	padding-left: 20px;
+	padding-top:5px;
+	}
+	#connection{
+		text-align:center;
+		color:red;
+	}
+	#connection.connected{
+		color:green;
+	}
+	.center{
+		text-align:center;
+	}
+	
+	</style>
+</head> 
+<body> 
+
+<div data-role="page">
+
+	<div data-role="header">
+		<h1>Robo Tommo</h1>
+	</div><!-- /header -->
+
+
+<div id="connection">Not Connected</div>
+
+	<div data-role="content" class="center">	
+		<div data-role="fieldcontain">
+			<input type="range" name="slider-2" id="slider" value="125" min="70" max="180" data-theme="a" data-track-theme="b" />
+		</div>
+		
+
+				
+		<div class="ui-body ui-body-b">
+				<fieldset class="ui-grid-b">
+						<div class="ui-block-a"><button id="left" data-icon="arrow-l" data-mini="true">Left</button></div>
+						<div class="ui-block-b"><button id="centre" data-icon="minus" data-mini="true">Centre</button></div>
+						<div class="ui-block-c"><button id="right" data-icon="arrow-r" data-mini="true">Right</button></div>
+			    </fieldset>
+				</div>
+
+	</div><!-- /content -->
+</div><!-- /page -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+	$(function(){
+		var pos = 125;
+		
+		var socket = io.connect('http://203.45.67.108:8080');
+		
+		socket.on('status', function (data) {
+			$("#connection").addClass('connected').text('connected');
+			console.log(data);
+		});
+		
+		socket.on('client connected', function (data) {
+			console.log('another client connected');
+		});
+		
+		socket.on('pan', function (data) {
+			$('#slider').val(data.pan);
+			$('#slider').blur();
+		});
+
+		
+		$("#right").click(function(){
+			pos = 180;
+			$('#slider').val(pos);
+			$('#slider').blur();
+			socket.emit('pan', { pan: pos });
+		});
+		
+		$("#left").click(function(){
+			pos = 70;
+			$('#slider').val(pos);
+			$('#slider').blur();
+			socket.emit('pan', { pan: pos });
+		});
+		
+		// Slider
+		$('#slider').change(function() { 
+			pos = $(this).val();
+			socket.emit('pan', { pan: $(this).val() });
+		});
+			
+		$('#centre').click(function() { 
+			pos = 125;
+			$('#slider').val(pos);
+			$('#slider').blur();
+			socket.emit('pan', { pan: pos });
+		});
+		
+	});
+</script>
+
+</body>
+</html>
